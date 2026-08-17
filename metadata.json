@@ -1,0 +1,6 @@
+{
+  "name": "Cineclub",
+  "description": "Streaming e catálogo editorial noir para filmes, séries e canais de TV com suporte a listas M3U e fontes premium.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,15 @@
+Validação local em http://localhost:3009/?tv=1:
+
+- Abas visíveis: Angola, Portugal, Paraguai e Brasil.
+- Brasil: 387 canais exibidos na interface após deduplicação.
+- Angola: 3 canais exibidos (KK TV Angola, Muzangala TV, TV Zimbo).
+- A troca da aba atualiza a busca e a contagem sem recarregar a página.
+- A grade continua formada por botões focáveis no modo TV.
+- A lista Brasil contém Amazon Sat entre os canais.
+- Build e TypeScript já concluídos sem erros antes do teste visual.
+Portugal também foi validado no modo TV: a interface exibiu 64 canais e atualizou o placeholder da busca para Portugal. A aba permaneceu focável e a grade foi atualizada sem recarga da página.
+
+Fontes externas das listas permanecem registradas em m3u-country-sources.txt.
+Paraguai validado no modo TV: a interface exibiu 70 canais e atualizou o placeholder da busca para Paraguai. A grade de canais foi substituída sem recarregar a página, mantendo os cards como botões navegáveis.
+
+Contagens observadas na interface: Angola 3, Portugal 64, Paraguai 70, Brasil 387 após deduplicação por URL.

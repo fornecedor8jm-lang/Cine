@@ -1,0 +1,11 @@
+Fontes M3U solicitadas pelo usuário:
+
+Angola: https://iptv-org.github.io/iptv/countries/ao.m3u
+Portugal: https://iptv-org.github.io/iptv/countries/pt.m3u
+Paraguai: https://iptv-org.github.io/iptv/countries/py.m3u
+Brasil: https://iptv-org.github.io/iptv/countries/br.m3u
+
+Fonte anterior mantida como referência da lista em português:
+Português: https://iptv-org.github.io/iptv/languages/por.m3u
+
+Objetivo: carregar as listas na seção Canais com seleção por país, busca e player HLS existente.
