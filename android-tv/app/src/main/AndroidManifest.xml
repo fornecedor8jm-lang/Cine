@@ -5,6 +5,8 @@
 
     <application
         android:allowBackup="false"
+        android:usesCleartextTraffic="true"
+        android:hardwareAccelerated="true"
         android:banner="@drawable/tv_banner"
         android:icon="@drawable/app_icon"
         android:label="Cineclub TV"
