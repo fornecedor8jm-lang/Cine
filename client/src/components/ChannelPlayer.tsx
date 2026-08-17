@@ -201,7 +201,7 @@ export default function ChannelPlayer({
       }
 
       // Enter / OK button on player
-      if (event.key === "Enter" || event.key === " " || event.keyCode === 13 || event.keyCode === 65385) {
+      if (event.key === "Enter" || event.key === " " || event.key === "Select" || event.key === "OK" || event.key === "DPAD_CENTER" || event.keyCode === 13 || event.keyCode === 23 || event.keyCode === 65385) {
         const active = document.activeElement;
         // If focusing a specific button, let native click happen
         if (active && (active.tagName === "BUTTON" || active.tagName === "INPUT")) {
@@ -445,7 +445,9 @@ export default function ChannelPlayer({
         style={videoStyle}
         playsInline
         webkit-playsinline="true"
+        preload="auto"
         onWaiting={() => setIsLoading(true)}
+        onCanPlay={() => setIsLoading(false)}
         onPlaying={() => {
           setIsLoading(false);
           setIsPlaying(true);
