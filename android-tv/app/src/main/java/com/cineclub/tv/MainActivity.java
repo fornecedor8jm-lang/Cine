@@ -6,28 +6,41 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 
 public class MainActivity extends Activity {
     private static final String START_URL = "https://enchanting-marshmallow-5df483.netlify.app/?tv=1";
     private WebView webView;
+    private FrameLayout rootLayout;
+    private View customView;
+    private WebChromeClient.CustomViewCallback customViewCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         enterImmersiveMode();
 
+        rootLayout = new FrameLayout(this);
+        rootLayout.setBackgroundColor(Color.BLACK);
         webView = new WebView(this);
         webView.setBackgroundColor(Color.BLACK);
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         webView.requestFocus(View.FOCUS_DOWN);
+        rootLayout.addView(webView, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
         configureWebView(webView);
-        setContentView(webView);
+        setContentView(rootLayout);
 
         if (savedInstanceState == null) {
             webView.loadUrl(START_URL);
@@ -44,7 +57,7 @@ public class MainActivity extends Activity {
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
@@ -69,11 +82,55 @@ public class MainActivity extends Activity {
                 v.setFocusableInTouchMode(true);
                 v.requestFocus(View.FOCUS_DOWN);
             }
+
+            @Override
+            public void onReceivedError(WebView v, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) showConnectionError();
+            }
         });
-        view.setWebChromeClient(new WebChromeClient());
+        view.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onShowCustomView(View view, CustomViewCallback callback) {
+                if (customView != null) {
+                    callback.onCustomViewHidden();
+                    return;
+                }
+                customView = view;
+                customViewCallback = callback;
+                rootLayout.addView(customView, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+                webView.setVisibility(View.GONE);
+                enterImmersiveMode();
+            }
+
+            @Override
+            public void onHideCustomView() {
+                hideCustomView();
+            }
+        });
         view.setOverScrollMode(View.OVER_SCROLL_NEVER);
         view.setVerticalScrollBarEnabled(false);
         view.setHorizontalScrollBarEnabled(false);
+    }
+
+    private void showConnectionError() {
+        if (webView == null) return;
+        String html = "<!doctype html><html><body style='background:#090b12;color:#f4f1ea;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center'><main><h1>Cineclub TV</h1><p>Não foi possível conectar ao site.</p><button autofocus onclick=\"location.href='" + START_URL + "'\" style='font-size:22px;padding:16px 28px;background:#a52f4b;color:white;border:0;border-radius:8px'>Tentar novamente</button></main></body></html>";
+        webView.loadDataWithBaseURL("https://cineclub.local/", html, "text/html", "UTF-8", null);
+    }
+
+    private void hideCustomView() {
+        if (customView == null) return;
+        rootLayout.removeView(customView);
+        customView = null;
+        if (customViewCallback != null) {
+            customViewCallback.onCustomViewHidden();
+            customViewCallback = null;
+        }
+        webView.setVisibility(View.VISIBLE);
+        webView.requestFocus(View.FOCUS_DOWN);
+        enterImmersiveMode();
     }
 
     private void enterImmersiveMode() {
@@ -94,7 +151,9 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
+        if (customView != null) {
+            hideCustomView();
+        } else if (webView != null && webView.canGoBack()) {
             webView.goBack();
         } else {
             super.onBackPressed();

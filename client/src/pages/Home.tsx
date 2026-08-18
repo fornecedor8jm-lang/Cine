@@ -53,6 +53,8 @@ function detectTvUserAgent(): boolean {
     ua.includes("smart-tv") ||
     ua.includes("googletv") ||
     ua.includes("android tv") ||
+    ua.includes("androidtv") ||
+    ua.includes("cineclubtv") ||
     ua.includes("crkey") ||
     ua.includes("aftt") ||
     ua.includes("aftm") ||
@@ -524,6 +526,7 @@ export default function Home() {
   }, [savedPlaylists]);
 
   // TV Remote Navigation Controller
+  const lastDpadHandledRef = useRef(0);
   useEffect(() => {
     if (!tvMode) return;
 
@@ -581,6 +584,9 @@ export default function Home() {
       };
       const directionKey = directionByCode[event.keyCode] ?? event.key;
       if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(directionKey)) return;
+      const now = performance.now();
+      if (event.repeat && now - lastDpadHandledRef.current < 55) return;
+      lastDpadHandledRef.current = now;
       if (active?.tagName === "INPUT" && ["ArrowLeft", "ArrowRight"].includes(directionKey)) return;
 
       // Channel Grid Navigation
@@ -623,7 +629,7 @@ export default function Home() {
           if (nextIdx >= 0 && nextIdx < cards.length) {
             event.preventDefault();
             cards[nextIdx].focus({ preventScroll: true });
-            cards[nextIdx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+            cards[nextIdx].scrollIntoView({ behavior: "auto", block: "nearest", inline: "center" });
             return;
           }
         }
@@ -637,8 +643,8 @@ export default function Home() {
         return (
           rect.width > 0 &&
           rect.height > 0 &&
-          getComputedStyle(element).visibility !== "hidden" &&
-          getComputedStyle(element).display !== "none"
+          element.offsetParent !== null &&
+          !element.hasAttribute("hidden")
         );
       });
 
@@ -744,7 +750,7 @@ export default function Home() {
     );
 
   const scrollTo = (id: string) => {
-    document.querySelector(`[data-row="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.querySelector(`[data-row="${id}"]`)?.scrollIntoView({ behavior: "auto", block: "start" });
     setMobileOpen(false);
   };
 
@@ -780,7 +786,7 @@ export default function Home() {
         ".channels-section .channels-grid .channel-card"
       );
       firstChannel?.focus({ preventScroll: true });
-      firstChannel?.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      firstChannel?.scrollIntoView({ behavior: "auto", block: "center", inline: "nearest" });
     }, 180);
     window.setTimeout(() => scrollTo("channels"), 0);
   };
