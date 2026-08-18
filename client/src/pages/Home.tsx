@@ -485,16 +485,17 @@ export default function Home() {
   // Virtual Remote & TV Mode state
   const [virtualRemoteOpen, setVirtualRemoteOpen] = useState(false);
   const [tvMode, setTvMode] = useState(() => {
+    const forcedByUrl =
+      typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tv") === "1";
+    const detectedTv = detectTvUserAgent();
+    if (forcedByUrl || detectedTv) return true;
     try {
       const saved = localStorage.getItem("cineclub-tv-mode");
       if (saved !== null) return saved === "true";
     } catch {
       // ignore
     }
-    return (
-      detectTvUserAgent() ||
-      (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("tv") === "1")
-    );
+    return false;
   });
 
   const [favorites, setFavorites] = useState<string[]>(() => {
