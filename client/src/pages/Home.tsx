@@ -532,6 +532,10 @@ export default function Home() {
     const moveFocus = (event: KeyboardEvent) => {
       const active = document.activeElement as HTMLElement | null;
 
+      // O player assume o controle exclusivo do D-PAD enquanto está aberto.
+      // Sem esta guarda, Home e ChannelPlayer processam a mesma tecla e o foco salta.
+      if (document.querySelector(".channel-player-layer")) return;
+
       // Color keys shortcuts on TV remote
       if (event.keyCode === 403 || event.key === "Red") {
         event.preventDefault();
@@ -568,8 +572,15 @@ export default function Home() {
         }
       }
 
-      if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
-      if (active?.tagName === "INPUT" && ["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      const directionByCode: Record<number, KeyboardEvent["key"]> = {
+        19: "ArrowUp",
+        20: "ArrowDown",
+        21: "ArrowLeft",
+        22: "ArrowRight",
+      };
+      const directionKey = directionByCode[event.keyCode] ?? event.key;
+      if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(directionKey)) return;
+      if (active?.tagName === "INPUT" && ["ArrowLeft", "ArrowRight"].includes(directionKey)) return;
 
       // Channel Grid Navigation
       const activeChannelCard = active?.closest<HTMLElement>(".channels-grid .channel-card");
@@ -583,11 +594,11 @@ export default function Home() {
           ? Math.max(1, getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length)
           : 1;
         const offset =
-          event.key === "ArrowLeft"
+          directionKey === "ArrowLeft"
             ? -1
-            : event.key === "ArrowRight"
+            : directionKey === "ArrowRight"
             ? 1
-            : event.key === "ArrowUp"
+            : directionKey === "ArrowUp"
             ? -columns
             : columns;
         const nextCard = channelCards[currentIndex + offset];
@@ -601,13 +612,13 @@ export default function Home() {
 
       // Poster Row Carousel Navigation (Left / Right smooth scroll)
       const activePosterCard = active?.closest<HTMLElement>(".poster-row .poster-card");
-      if (activePosterCard && ["ArrowLeft", "ArrowRight"].includes(event.key)) {
+      if (activePosterCard && ["ArrowLeft", "ArrowRight"].includes(directionKey)) {
         const row = activePosterCard.closest<HTMLElement>(".poster-row");
         if (row) {
           const cards = Array.from(row.querySelectorAll<HTMLElement>(".poster-button"));
           const currentBtn = activePosterCard.querySelector<HTMLElement>(".poster-button");
           const idx = currentBtn ? cards.indexOf(currentBtn) : -1;
-          const nextIdx = event.key === "ArrowLeft" ? idx - 1 : idx + 1;
+          const nextIdx = directionKey === "ArrowLeft" ? idx - 1 : idx + 1;
           if (nextIdx >= 0 && nextIdx < cards.length) {
             event.preventDefault();
             cards[nextIdx].focus({ preventScroll: true });
@@ -642,7 +653,7 @@ export default function Home() {
         ArrowDown: [0, 1],
         ArrowLeft: [-1, 0],
         ArrowRight: [1, 0],
-      }[event.key] ?? [0, 0];
+      }[directionKey] ?? [0, 0];
 
       const ranked = candidates
         .filter((candidate) => candidate !== current)

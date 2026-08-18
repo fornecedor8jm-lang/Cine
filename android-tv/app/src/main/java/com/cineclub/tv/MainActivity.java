@@ -61,6 +61,14 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest request) {
                 return false;
             }
+
+            @Override
+            public void onPageFinished(WebView v, String url) {
+                super.onPageFinished(v, url);
+                v.setFocusable(true);
+                v.setFocusableInTouchMode(true);
+                v.requestFocus(View.FOCUS_DOWN);
+            }
         });
         view.setWebChromeClient(new WebChromeClient());
         view.setOverScrollMode(View.OVER_SCROLL_NEVER);

@@ -174,6 +174,22 @@ export default function ChannelPlayer({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       resetControlsTimer();
+      const isConfirm =
+        event.key === "Enter" ||
+        event.key === " " ||
+        event.key === "Select" ||
+        event.key === "OK" ||
+        event.key === "DPAD_CENTER" ||
+        event.keyCode === 13 ||
+        event.keyCode === 23 ||
+        event.keyCode === 65385;
+      const directionKey =
+        event.keyCode === 19
+          ? "ArrowUp"
+          : event.keyCode === 20
+          ? "ArrowDown"
+          : event.key;
+
 
       // Back / Return buttons on Android TV / Remote / PC
       if (
@@ -187,21 +203,24 @@ export default function ChannelPlayer({
       ) {
         if (showChannelDrawer) {
           event.preventDefault();
+          event.stopPropagation();
           setShowChannelDrawer(false);
           return;
         }
         if (showMoreMenu) {
           event.preventDefault();
+          event.stopPropagation();
           setShowMoreMenu(false);
           return;
         }
         event.preventDefault();
+        event.stopPropagation();
         onClose();
         return;
       }
 
       // Enter / OK button on player
-      if (event.key === "Enter" || event.key === " " || event.key === "Select" || event.key === "OK" || event.key === "DPAD_CENTER" || event.keyCode === 13 || event.keyCode === 23 || event.keyCode === 65385) {
+      if (isConfirm) {
         const active = document.activeElement;
         // If focusing a specific button, let native click happen
         if (active && (active.tagName === "BUTTON" || active.tagName === "INPUT")) {
@@ -210,24 +229,28 @@ export default function ChannelPlayer({
         // If autoplay muted, pressing OK un-mutes
         if (isAutoplayMuted || isMuted) {
           event.preventDefault();
+          event.stopPropagation();
           unmuteAndPlayAudio();
           return;
         }
         // Otherwise toggle play/pause
         event.preventDefault();
+        event.stopPropagation();
         togglePlayPause();
         return;
       }
 
       // Up / Down arrow: Previous / Next channel
-      if (event.key === "ArrowUp" || event.key === "ChannelUp" || event.keyCode === 427) {
+      if (directionKey === "ArrowUp" || event.key === "ChannelUp" || event.keyCode === 427) {
         if (!showChannelDrawer && !showMoreMenu) {
           event.preventDefault();
+          event.stopPropagation();
           handlePreviousChannel();
         }
-      } else if (event.key === "ArrowDown" || event.key === "ChannelDown" || event.keyCode === 428) {
+      } else if (directionKey === "ArrowDown" || event.key === "ChannelDown" || event.keyCode === 428) {
         if (!showChannelDrawer && !showMoreMenu) {
           event.preventDefault();
+          event.stopPropagation();
           handleNextChannel();
         }
       }
@@ -235,12 +258,14 @@ export default function ChannelPlayer({
       // Mute key
       if (event.key === "m" || event.key === "M" || event.keyCode === 449) {
         event.preventDefault();
+        event.stopPropagation();
         toggleMute();
       }
 
       // Fullscreen key
       if (event.key === "f" || event.key === "F") {
         event.preventDefault();
+        event.stopPropagation();
         toggleFullscreen();
       }
     };
