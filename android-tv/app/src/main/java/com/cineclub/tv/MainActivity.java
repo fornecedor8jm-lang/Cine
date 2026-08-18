@@ -13,7 +13,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
-    private static final String START_URL = "https://cine-dwae.vercel.app/?tv=1";
+    private static final String START_URL = "https://enchanting-marshmallow-5df483.netlify.app/?tv=1";
     private WebView webView;
 
     @Override
