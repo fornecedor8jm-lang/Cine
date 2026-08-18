@@ -693,10 +693,14 @@ export default function Home() {
         const merged = results.flatMap((result) =>
           result.status === "fulfilled" ? result.value : []
         );
+        // A mesma transmissão pode aparecer legitimamente em fontes diferentes.
+        // A deduplicação global escondia canais da fonte selecionada, como o Amazon Sat,
+        // quando a URL já havia aparecido em Brasil/Nuvem Premium.
         const seen = new Set<string>();
         const unique = merged.filter((channel) => {
-          if (seen.has(channel.url)) return false;
-          seen.add(channel.url);
+          const key = `${channel.sourceCountry ?? ""}::${channel.url.trim().toLocaleLowerCase("pt-BR")}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
           return true;
         });
         if (!unique.length) throw new Error("Nenhuma lista de canais pôde ser carregada.");
