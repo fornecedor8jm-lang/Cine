@@ -1,0 +1,16 @@
+[build]
+  command = "pnpm build"
+  publish = "dist/public"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[dev]
+  command = "pnpm dev"
+  port = 3000
+  targetPort = 3000
