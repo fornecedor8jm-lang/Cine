@@ -8,7 +8,7 @@ export const M3U_SOURCES = [
   { id: "py", label: "Paraguai", url: "https://iptv-org.github.io/iptv/countries/py.m3u" },
   { id: "por", label: "Todos em Português", url: "https://iptv-org.github.io/iptv/languages/por.m3u" },
   { id: "sinal-aberto", label: "Sinal Aberto", url: "/playlists/sinal-aberto-todos-canais.m3u" },
-  { id: "iptv-legal", label: "IPTV Legal", url: "https://raw.githubusercontent.com/helenfernanda/gratis/main/iptvlegal.m3u" },
+  { id: "iptv-legal", label: "IPTV Legal", url: "/playlists/iptvlegal.m3u" },
 ] as const;
 
 export type M3uContentType = "live" | "movie" | "series";
