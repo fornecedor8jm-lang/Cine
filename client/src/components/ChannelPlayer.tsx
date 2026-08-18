@@ -55,6 +55,9 @@ export default function ChannelPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [channelDrawerQuery, setChannelDrawerQuery] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+  const isPlayingRef = useRef(isPlaying);
+  const showChannelDrawerRef = useRef(showChannelDrawer);
+  const showMoreMenuRef = useRef(showMoreMenu);
 
   // Current channel indexing
   const currentChannelIndex = useMemo(() => {
@@ -74,17 +77,60 @@ export default function ChannelPlayer({
     onSelectChannel(channels[nextIndex]);
   };
 
-  // Reset auto-hide controls timer (5 seconds)
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    showChannelDrawerRef.current = showChannelDrawer;
+    showMoreMenuRef.current = showMoreMenu;
+  }, [isPlaying, showChannelDrawer, showMoreMenu]);
+
+  // Reset auto-hide controls timer (5 seconds). Touches only reveal the UI temporarily.
   const resetControlsTimer = () => {
     setShowControls(true);
-    if (controlsTimeoutRef.current) {
+    if (controlsTimeoutRef.current !== undefined) {
       window.clearTimeout(controlsTimeoutRef.current);
     }
     controlsTimeoutRef.current = window.setTimeout(() => {
-      if (isPlaying && !showChannelDrawer && !showMoreMenu) {
+      if (isPlayingRef.current && !showChannelDrawerRef.current && !showMoreMenuRef.current) {
         setShowControls(false);
       }
+      controlsTimeoutRef.current = undefined;
     }, 5000);
+  };
+
+  useEffect(() => {
+    const firstButton = playerContainerRef.current?.querySelector<HTMLButtonElement>(".player-control-button");
+    const focusTimer = window.setTimeout(() => firstButton?.focus(), 80);
+    return () => {
+      window.clearTimeout(focusTimer);
+      if (controlsTimeoutRef.current !== undefined) window.clearTimeout(controlsTimeoutRef.current);
+    };
+  }, []);
+
+  const isConfirmKey = (event: KeyboardEvent) =>
+    event.key === "Enter" || event.key === " " || event.key === "Select" || event.key === "OK" ||
+    event.key === "DPAD_CENTER" || event.keyCode === 13 || event.keyCode === 23 || event.keyCode === 65385;
+
+  const handlePlayerKeyCapture = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isConfirmKey(event.nativeEvent) && event.target instanceof HTMLButtonElement) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.target.click();
+      return;
+    }
+    const direction = event.keyCode === 21 ? "ArrowLeft" : event.keyCode === 22 ? "ArrowRight" : event.key;
+    if (direction !== "ArrowLeft" && direction !== "ArrowRight") return;
+    const buttons = Array.from(playerContainerRef.current?.querySelectorAll<HTMLButtonElement>(".player-control-button") ?? [])
+      .filter((button) => !button.disabled && button.offsetParent !== null);
+    const current = document.activeElement as HTMLButtonElement | null;
+    const index = current ? buttons.indexOf(current) : -1;
+    if (!buttons.length) return;
+    const nextIndex = direction === "ArrowLeft"
+      ? Math.max(0, index < 0 ? 0 : index - 1)
+      : Math.min(buttons.length - 1, index < 0 ? 0 : index + 1);
+    event.preventDefault();
+    event.stopPropagation();
+    buttons[nextIndex]?.focus();
+    resetControlsTimer();
   };
 
   // User Interaction Unmute (Liberar áudio)
@@ -452,8 +498,8 @@ export default function ChannelPlayer({
       ref={playerContainerRef}
       id="cineclub-player-container"
       className="cineclub-player-container"
-      onMouseMove={resetControlsTimer}
-      onTouchStart={resetControlsTimer}
+      onKeyDownCapture={handlePlayerKeyCapture}
+      onPointerDown={resetControlsTimer}
       onClick={() => {
         // Unmute on tap if autoplay muted
         if (isAutoplayMuted || isMuted) {
